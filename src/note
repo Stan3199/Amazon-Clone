@@ -1,0 +1,61 @@
+const functions = require("firebase-functions");
+const express = require("express");
+const cors = require("cors");
+const {request, response } = require("express");
+const stripe = require("stripe")('sk_test_51INumEHiLiY68hqR7het6qtlv5Amk0kWmzMIhw5Ubb3fXie2ReEugrmfGjbNVplawE3VeQf2YSnxjzpDPBlQ01p400J5dxWBYW');
+
+// API
+
+// App config
+const app = express();
+
+// Middlewares
+app.use(cors({origin:true}));
+app.use(express.json());
+
+// API routes
+app.get('/',(request,response)=> response.status(200).send('hello world',request))
+app.post('/payments/create',async (request,response)=>{
+    const total = request.query.total;
+    console.log('Payment request received for the ammount >>> ',total);
+
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount:total,
+        currency:'INR'
+    })
+
+    response.status(201).send({
+        clientSecret: paymentIntent.client_secret
+    })
+})
+
+// Listen command
+exports.api = functions.https.onRequest(app);
+// "http://localhost:5001/fir-d374a/us-central1/api"
+
+module.exports = {
+  root: true,
+  env: {
+    es6: true,
+    node: true,
+  },
+  "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true,
+            "modules": true,
+            "experimentalObjectRestSpread": true
+        }
+    },
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+  rules: {
+    "comma-dangle": 0,
+    "react/jsx-uses-vars": 1,
+    "react/display-name": 1,
+    "no-unused-vars": "warn",
+    "no-console": 1,
+    "no-unexpected-multiline": "warn"
+  },
+};
